@@ -8,59 +8,76 @@ from datetime import datetime
 
 
 def main():
-    acc_file_path_excel = f'C:\\Users\\leafa\\OneDrive\\Área de Trabalho\\TEMP\\ACC\\ACC7.xlsx'
-    fft_file_path_excel = f'C:\\Users\\leafa\\OneDrive\\Área de Trabalho\\TEMP\\FFT\\FFT7.xlsx'
-    df_acc = pd.read_excel(f'{acc_file_path_excel}','Sheet1',index_col=0)
-    df_fft = pd.read_excel(f'{fft_file_path_excel}','Sheet1',index_col=0)
+    TCC_path = f'C:\\Users\\leafa\\OneDrive - Católica SC\\Educação\\Engenharia elétrica\\Fase 10\\' \
+               f'Trabalho de conclusão de curso\\Ensaios\\Ensaio de vibração 2'
+    test_folder = f'\\1 - Vazio - Velocidade'
+    acc_file_path_excel = f'{TCC_path}{test_folder}\\Teste 1\\VT1_T.csv'
 
-    print((df_acc['Sample']).count())
+    g=9.80665
 
-    qt_amostras = (df_acc['Sample']).count()
-    T_amostragem = max(df_acc['Sample'])
+    fft_file_path_excel = f'{TCC_path}{test_folder}\\Teste 1\\VT1.csv'
 
-    fft_beams = 256
+    df_acc = pd.read_csv(f'{acc_file_path_excel}',index_col=0)
 
-    fft_acc_z_python = np.fft.fft(df_acc['ACCx'],n=fft_beams)
-    #print(fft_acc_z_python)
-    #exit(1)
+    df_fft = pd.read_csv(f'{fft_file_path_excel}',index_col=0)
 
-    fft_acc_z_python_mod = np.abs(fft_acc_z_python)
-    fft_acc_z_python_mod = fft_acc_z_python_mod[0: int(len(fft_acc_z_python_mod) / 2)]
-    fft_acc_z_python_mod = fft_acc_z_python_mod/(qt_amostras/4)
+    #df_fft.convert_objects(convert_numeric=True)
+
+
+
+    df_acc['Ch1 Y-Axis'] = df_acc['Ch1 Y-Axis']*g
+    df_acc['Ch1 Y-Axis'] = apply_moving_average(df_acc,'Ch1 Y-Axis',5  )
+
+    qt_amostras = (df_acc['Ch1 Y-Axis']).count()
+    #T_amostragem = max(df_acc['X-Axis'])
+    T_amostragem = df_acc.index.max()
+
+    fft_beams = 3200
+
+    fft_acc_z_python_mod = calculateFFT(df_acc,'Ch1 Y-Axis',fft_beams)
+
 
     f_res = (qt_amostras / T_amostragem) / fft_beams
     print (f'frequency resolution = {f_res}Hz')
 
-    f_range = np.linspace(0,(fft_beams/2)*f_res,int(fft_beams/2))
-    print(len(f_range))
+
+    f_range = np.linspace(0,(len(fft_acc_z_python_mod))*f_res,int(len(fft_acc_z_python_mod)))
+
+    #inv_fft_z = np.fft.ifft(fft_acc_z_python)
+
+    fft_acc_z_placa = df_fft['Ch1 Y-Axis']
+    #print(df_fft)
+    acc_z = df_acc.index
+    df_speed_x = integrate_acc_numerically(df_acc['Ch1 Y-Axis'], 'Ch1 Y-Axis', 'Speed_z')
+    df_speed_x = eliminate_DC_level(df_speed_x,'Speed_z' )
+
+    fft_speed_z_eqp = calculateFFT(df_speed_x,'Speed_z',fft_beams)
 
 
-    #fft_acc_z_python_mod = fft_acc_z_python_mod[0]*
 
-    inv_fft_z = np.fft.ifft(fft_acc_z_python)
-
-    fft_acc_z_placa = df_fft['FFTx']
-    acc_z = df_acc['ACCx']
-
-    subplot_rows = 5
+    subplot_rows = 2
     subplot_columns = 3
 
-
     plt.subplot(subplot_rows,subplot_columns,1)
-    plt.plot(acc_z)
+    plt.plot(df_acc)
+    #plt.plot(inv_fft_z)
 
     plt.subplot(subplot_rows,subplot_columns,2)
+
     plt.plot(fft_acc_z_placa)
+
+
 
     plt.subplot(subplot_rows,subplot_columns,3)
     plt.plot(f_range,fft_acc_z_python_mod)
 
-    plt.subplot(subplot_rows,subplot_columns,4)
-    plt.plot(inv_fft_z)
 
-    df_speed_x = integrate_acc_numerically(df_acc['teste'],'teste','Speed_x')
+    plt.subplot(subplot_rows,subplot_columns,4)
+
+    plt.plot(df_speed_x['Speed_z'])
     plt.subplot(subplot_rows,subplot_columns,5)
-    plt.plot(df_speed_x['Speed_x'])
+
+    plt.plot(f_range, fft_speed_z_eqp)
 
     plt.show()
 
@@ -84,13 +101,27 @@ def integrate_acc_numerically(df, eixo_acc, eixo_speed):
     return ret_df
 
 
+def calculateFFT (data_frame,column_name,num_beams):
+    qt_amostras = (data_frame[column_name]).count()
+    fft = np.fft.fft(data_frame[column_name],n=num_beams)
+    fft = (np.abs(fft))
+    print(len(fft))
+    fft = fft[0: int(len(fft) / 2)]
+    fft = (fft / (qt_amostras / 4))
+    return fft
 
+def eliminate_DC_level (data_frame,column_name):
+    mean = data_frame[column_name].mean()
+    data_frame[column_name] = data_frame[column_name] - mean
+    return data_frame
 
+def apply_moving_average(data_frame,column_name, num_avgs):
+    #ret_val=data_frame[column_name].rolling(num_avgs).mean()
+    ret_val = data_frame[column_name].ewm(span=num_avgs, adjust=False).mean()
 
-
-
-
-
+    ret_val.iloc[0:num_avgs-1] = ret_val.iloc[num_avgs]
+    print(ret_val.iloc[0:10])
+    return ret_val
 
 
 
