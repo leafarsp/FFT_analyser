@@ -8,11 +8,22 @@ from matplotlib.offsetbox import AnchoredText
 
 import matplotlib.ticker as ticker
 
-
+#Este arquivo faz a leitura dos logs gerados pela placa B-L475IOT01-A e do analisador de vibração e fas o plot dos
+#gráficos. Este arquivo faz o plot dos dados sobrepostos, de tres ensaios iguais feitos em momentos diferentes
+#para verificar a repetibilidade dos ensaios.
 
 
 def main():
-    user = 'rafaelb1'
+    size = 12
+    params = {'legend.fontsize': 'large',
+              # 'figure.figsize': (40, 20),
+              'axes.labelsize': size,
+              'axes.titlesize': size,
+              'xtick.labelsize': size * 0.75,
+              'ytick.labelsize': size * 0.75,
+              'axes.titlepad': 25}
+    plt.rcParams.update(params)
+    user = 'leafa'
     teste = '4'
     TCC_path = f'C:\\Users\\{user}\\OneDrive - Católica SC\\Educação\\Engenharia elétrica\\Fase 10\\' \
                f'Trabalho de conclusão de curso\\Ensaios\\Ensaio de vibração 2'
@@ -45,8 +56,9 @@ def main():
     ax1.legend(loc="upper right")
     ax1.set(title='Espectro de frequências da velocidade\nVerificação da repetibilidade entre os testes')
     #ax1.title("Espectro de frequências da velocidade\nVerificação da repetibilidade entre os testes")
-    ax1.set(xlabel='Frequência [Hz]', ylabel='Velocidade [m/s]')
+    ax1.set(xlabel='Frequência [Hz]', ylabel='Velocidade \nnormalizada')
     fig.savefig(f'Gráfico sobrepostos equipamento .png', bbox_inches='tight')
+    fig.tight_layout()
     fig.show()
 
 
@@ -96,8 +108,9 @@ def main():
     ax2.legend(loc="upper right")
     ax2.set(title='Espectro de frequências da velocidade\nVerificação da repetibilidade entre os testes')
     # ax1.title("Espectro de frequências da velocidade\nVerificação da repetibilidade entre os testes")
-    ax2.set(xlabel='Frequência [Hz]', ylabel='Velocidade [m/s]')
+    ax2.set(xlabel='Frequência [Hz]', ylabel='Velocidade \nnormalizada')
     fig2.savefig(f'Gráfico sobrepostos placa .png', bbox_inches='tight')
+    fig.tight_layout()
     fig2.show()
 
 

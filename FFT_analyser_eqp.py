@@ -5,9 +5,13 @@ import sys
 from datetime import datetime
 
 
-
+#Este arquivo é um teste realizado para tentar gerar um gráfico do espectro de frequencia a partir dos dados
+#de aceleração do analisador de vibração. O ideal era que fosse possível gerar o mesmo gráfico que o equipamento
+#gera, no entanto esse objetovo não foi alcançado.
 
 def main():
+
+
     TCC_path = f'C:\\Users\\leafa\\OneDrive - Católica SC\\Educação\\Engenharia elétrica\\Fase 10\\' \
                f'Trabalho de conclusão de curso\\Ensaios\\Ensaio de vibração 2'
     test_folder = f'\\1 - Vazio - Velocidade'
@@ -77,7 +81,7 @@ def main():
     plt.plot(df_speed_x['Speed_z'])
     plt.subplot(subplot_rows,subplot_columns,5)
 
-    plt.plot(f_range, fft_speed_z_eqp)
+    plt.plot(f_range, fft_speed_z_eqp )
 
     plt.show()
 
